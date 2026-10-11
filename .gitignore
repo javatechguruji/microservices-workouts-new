@@ -1,0 +1,11 @@
+# Generated output and local settings
+**/target/
+.idea/
+*.iml
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
