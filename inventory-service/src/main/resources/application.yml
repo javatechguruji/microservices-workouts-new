@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:inventory-service-db;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always
+  application:
+    name: inventory-service
+server:
+  address: 127.0.0.1
+  port: 9105
+logging:
+  pattern:
+    console: '%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%thread] %logger{36} trace_id=%X{trace_id:-} span_id=%X{span_id:-} - %msg %kvp%n%wEx'
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

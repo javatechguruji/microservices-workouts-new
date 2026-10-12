@@ -1,19 +1,19 @@
 # Microservices learning roadmap
 
-One project: `microservices-workouts`. Small scenarios for learning and interview practice.
-Start with S001, then S002 and S004. Add infrastructure only when a scenario requires it.
+One workspace: `microservices-workouts-new`. Small scenarios for learning and interview practice.
+Start with **S030 — Observability** using `order-service` and `inventory-service`. Add infrastructure only when an exercise requires it.
 
 ## Status and conventions
 
-- Every checkbox means implemented, run, reviewed, and explained. All scenarios below are planned.
+- Every checkbox means implemented, run, reviewed, and explained. S030–S032 have code and Postman demo instructions. Their AWS demos still need your run; all completion boxes remain open.
 - The previous ecommerce implementation is archived; it does not count as scenario completion.
 - IDs are permanent and local to this project. Next unused ID: `S041`. Never reuse retired IDs.
 - Planned paths are plain text. Turn them into links only after the artifact exists.
 - Java base package: `com.tip.ecommerce`, retained from the original project.
-- Each scenario will be a standalone Maven project under `scenarios/<stem>/`.
-- All scenario Java types go directly in its one package; tests use the same package.
-- For two processes, use profiles or scenario-specific configuration in that project. Shared startup code stays outside the scenario package. Split deployable modules only when the exercise needs that boundary.
-- Default tools: Java 17, Maven, Spring Boot, and WebClient for outgoing HTTP. Pin dependencies when the first runnable example is added.
+- Use at most three application projects in this workspace; currently there are exactly two: `order-service` and `inventory-service`. Reuse them for later scenarios.
+- All scenario Java types go directly in its one package.
+- Each service is an independent Maven project and process. Shared startup code stays outside scenario packages. Older planned `scenarios/` paths are proposals to revise when that exercise is started, not instructions to create more projects.
+- Default tools: Java 17, Maven, Spring Boot, and WebClient for outgoing HTTP. The first exercise pins Spring Boot 3.5.9 and OpenTelemetry Java agent 2.20.0, matching the original project.
 
 See [workspace guide](README.md) and [document conventions](docs/README.md).
 
@@ -205,23 +205,27 @@ See [workspace guide](README.md) and [document conventions](docs/README.md).
 
 ## Observability
 
+Start with the [observability overview](docs/observability/00-observability-overview.md).
+Follow a BOOK-1 checkout into inventory reservation, using the
+services’ own in-memory databases and the existing observability tools. Each lesson ends with interview practice.
+
 <a id="s030"></a>
-- [ ] **S030 — Correlated logs** · Scenario: **Follow one request through two services**
-  - Try: Carry a request identifier without logging credentials.
-  - Planned implementation: `scenarios/s030_correlation/src/main/java/com/tip/ecommerce/s030_correlation/`
-  - Planned note: `docs/observability/s030_correlation.md`
+- [ ] **S030 — Logging: follow an order into inventory**
+  - Try: Follow acceptance and reservation events using order IDs and trace IDs.
+  - Implementation: [order package](order-service/src/main/java/com/tip/ecommerce/s030_correlation/) · [inventory package](inventory-service/src/main/java/com/tip/ecommerce/s030_correlation/)
+  - Lesson: [S030 — Logging: follow an order into inventory](docs/observability/s030_logging.md)
 
 <a id="s031"></a>
-- [ ] **S031 — Metrics and traces** · Scenario: **Find the slow hop**
-  - Try: Compare request rate, failures, latency, and a distributed trace.
-  - Planned implementation: `scenarios/s031_metrics_traces/src/main/java/com/tip/ecommerce/s031_metrics_traces/`
-  - Planned note: `docs/observability/s031_metrics_traces.md`
+- [ ] **S031 — Metrics and traces**
+  - Try: Measure reservation requests, then locate a slow step in the inventory-call trace.
+  - Implementation: [agent instrumentation settings](order-service/src/main/resources/otel.properties) applied to the S030 request.
+  - Lessons: [Part A — Metrics: measure inventory reservations](docs/observability/s031_metrics_traces.md#metrics) · [Part B — Traces: locate the slow step](docs/observability/s031_metrics_traces.md#traces)
 
 <a id="s032"></a>
-- [ ] **S032 — Architect Level: incident diagnosis** · Scenario: **Latency rises while errors stay low**
-  - Try: Use service objectives and saturation signals to distinguish causes.
-  - Planned implementation: `scenarios/s032_incident_diagnosis/src/main/java/com/tip/ecommerce/s032_incident_diagnosis/`
-  - Planned note: `docs/observability/s032_incident_diagnosis.md`
+- [ ] **S032 — Investigate a slow inventory reservation**
+  - Try: Combine timings, traces, and logs; compare evidence after recovery. Later discuss service targets, alerts, sampling, and metric labels.
+  - Implementation: [slow-inventory filter](inventory-service/src/main/java/com/tip/ecommerce/s032_incident_diagnosis/)
+  - Lesson: [S032 — Investigate a slow inventory reservation](docs/observability/s032_incident_diagnosis.md)
 
 ## Testing and delivery
 
