@@ -173,6 +173,86 @@ This is a shortened console example; time, thread, and class are omitted here. Y
 print the IDs supplied by the agent. The agent exports structured log records separately
 using OTLP, including the key/value fields enabled in `otel.properties`.
 
+### Structured log sent to the Collector
+
+The console stays readable text. Separately, the agent sends the log and its fields
+to the Collector. Our `http/protobuf` setting sends binary Protobuf; this is a shortened,
+illustrative **OTLP JSON view of those fields**, not a captured network payload.
+
+```json
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "order-service"
+            }
+          },
+          {
+            "key": "deployment.environment.name",
+            "value": {
+              "stringValue": "observability"
+            }
+          }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "scope": {
+            "name": "com.tip.ecommerce.s030_correlation.OrderService"
+          },
+          "logRecords": [
+            {
+              "timeUnixNano": "1791767097060922000",
+              "severityNumber": 9,
+              "severityText": "INFO",
+              "body": {
+                "stringValue": "Order saved"
+              },
+              "attributes": [
+                {
+                  "key": "event",
+                  "value": {
+                    "stringValue": "order.saved"
+                  }
+                },
+                {
+                  "key": "orderId",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "outcome",
+                  "value": {
+                    "stringValue": "success"
+                  }
+                }
+              ],
+              "traceId": "f6cec42964fcda4036fbf389e6552ad7",
+              "spanId": "857826715f2344ab"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+| Field | Explanation |
+| --- | --- |
+| `resourceLogs` / `resource.attributes` | Groups logs by application; the agent supplies `service.name` and environment from `otel.properties`. |
+| `scopeLogs` / `scope.name` | Groups entries by the logger that produced them, here `OrderService`. |
+| `timeUnixNano` | Time the log was written, expressed as nanoseconds since 1 January 1970. |
+| `severityText` / `severityNumber` | The level as text and its OpenTelemetry number; INFO is 9. |
+| `body.stringValue` | The readable message passed to `log(...)`. |
+| `attributes` | Fields from `addKeyValue`, such as `event`, `orderId`, and `outcome`. `intValue` preserves order ID as an integer even though OTLP JSON writes that integer as a quoted string. |
+| `traceId` / `spanId` | The active trace and span supplied by the agent. These are the IDs shown as `trace_id` and `span_id` in the console. |
+
 For how order IDs, trace IDs, and span IDs connect related activity, see
 [S031 — Connect an order, its requests, and their steps](s031_metrics_traces.md#connect-an-order-its-requests-and-their-steps).
 

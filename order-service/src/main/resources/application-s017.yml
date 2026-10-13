@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:${SAGA_DATA_DIR:./data}/${SAGA_RUN_ID}/order-service-db;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:s017-schema.sql
+      data-locations: optional:classpath:s017-data.sql
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    admin:
+      fail-fast: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 3000
+        request.timeout.ms: 3000
+        delivery.timeout.ms: 10000
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 1
+    listener:
+      ack-mode: record
+      concurrency: 1
+saga:
+  run-id: ${SAGA_RUN_ID}
+  topic: workouts.s017.${saga.run-id}.events
+  publish-delay-ms: 1000

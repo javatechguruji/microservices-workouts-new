@@ -1,0 +1,3 @@
+saga:
+  demo:
+    fail-release: false

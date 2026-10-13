@@ -31,9 +31,10 @@ Each note develops these points (headings may follow the story):
 9. **Architect Level scenarios** — connect to the advanced roadmap entry for this subject.
 10. **Interview practice (always at the end)** — include realistic questions and short spoken answers specific to this document. Start with the concept, connect it to the example, and explain evidence or limitations. Include “What is observability?” in the overall introduction. Keep advanced questions in the later architect lesson. Never imply that unrun exercises or proposed features are verified experience.
 
-Start with [S030 — Logging: follow an order into inventory](observability/s030_logging.md). The workspace currently
-contains two independent Maven projects, `order-service` and `inventory-service`; reuse them
-for later exercises and keep the workspace within three application projects.
+Start with [S030 — Logging: follow an order into inventory](observability/s030_logging.md). The workspace contains three independent Maven applications: `order-service`,
+`inventory-service`, and `payment-service`. Reuse them for later exercises.
+[Distributed transactions](data-consistency/00-distributed-transactions-overview.md)
+uses the payment application with Kafka choreography.
 
 At the top, link to the exact roadmap anchor and existing implementation package.
 Keep documentation under `docs/`; do not place README files inside Java packages.
@@ -52,7 +53,14 @@ in their filename or folder. Preserve third-party library boundaries.
 
 IDs do not isolate execution. Use profiles or explicit configuration so
 unrelated examples do not start together. Avoid a shared business-code library initially.
-The learner runs the two local microservices in IntelliJ and uses Postman. Each service owns an in-memory database reused across scenarios, with familiar seeded data. Grafana uses the existing observability infrastructure. Explain expected evidence and recovery, without duplicating infrastructure setup or terminal run/test commands.
+The learner runs the required applications in IntelliJ and uses Postman. Prefer a
+local embedded H2 database per service with familiar tables and startup seed data.
+Simple scenarios use in-memory H2; restart-recovery scenarios use file-backed H2 and
+seed only missing data. Kafka and background delivery are allowed when the concept
+requires them, using the existing AWS Kafka and user-managed tunnel. Observability
+retains its synchronous two-service flow and existing Grafana infrastructure. Explain
+expected evidence and recovery without duplicating infrastructure provisioning or
+terminal run/test commands.
 
 Check completion only after running and reviewing the example and explaining its result.
 Recaps may reuse an implementation, but must say which scenario they reuse.

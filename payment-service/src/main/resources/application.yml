@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: payment-service
+  profiles:
+    default: s017
+server:
+  address: 127.0.0.1
+  port: 9103
+logging:
+  pattern:
+    console: '%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] %logger{36} - %msg %kvp%n%wEx'
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

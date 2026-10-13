@@ -35,8 +35,8 @@ boundaries; services own the flow and repositories own database access.
 The example covers accepting an order and making one direct inventory-reservation
 call. Each application owns an embedded H2 database. The order schema creates `orders`;
 the inventory schema creates `stock` and `reservation`. Inventory's `data.sql` uses the
-same product SKUs and initial quantities as the reference project. These databases
-are shared across the scenarios within their owning service. Successful reservations
+same product SKUs and initial quantities as the reference project. These in-memory databases
+are shared across the observability scenarios within their owning service. Successful reservations
 change stock; release requests restore it.
 
 - [Order schema](../../order-service/src/main/resources/schema.sql)

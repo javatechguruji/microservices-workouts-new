@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/s030/api/orders")
+@org.springframework.context.annotation.Profile("!s017 & !s041")
 public class OrderController {
     private static final Logger log = LoggerFactory.getLogger(OrderController.class);
     private final OrderService orderService;

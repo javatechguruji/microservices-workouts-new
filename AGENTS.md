@@ -8,17 +8,22 @@ presentation guidance elsewhere in this workspace.
 
 - Reference `../microservices-workouts` for familiar business names, API behavior, and
   sample data. Inspect it as needed; do not modify that project.
-- Keep the two existing applications, order-service and inventory-service; never exceed
-  three application projects. Use flat `com.tip.ecommerce.<scenario>` packages.
-- The authorized example uses synchronous checkout: order-service saves the order and
-  uses the shared InventoryServiceClient to request inventory reservation. Do not add
-  Kafka, background workers, or unrelated business machinery for this example.
+- Reuse order-service, inventory-service, and payment-service; never exceed three
+  application projects. Prefer services and business examples from the old workspace.
+  Use flat `com.tip.ecommerce.<scenario>` packages.
+- Observability uses synchronous checkout through the shared InventoryServiceClient.
+  Preserve that example. Other topics may use Kafka and background delivery when the
+  scenario requires them. Distributed transactions uses Kafka Saga choreography;
+  explain orchestration without implementing it. Keep unrelated machinery out.
 - Scenario entry routes use their scenario prefix; reusable inventory routes use
   `/api/inventory`. Preserve the implemented response semantics accurately.
-- Each service uses its own embedded H2 database with familiar seeded data, reused
-  across scenarios. Keep database work in repositories. Use Spring Data for orders.
+- Prefer an embedded H2 database per service with familiar tables and startup seed
+  data. Use in-memory H2 for simple lessons and file-backed H2 when restart recovery
+  requires persisted progress. Isolate scenario profiles and seed without overwriting
+  existing progress. Keep database work in repositories. Use Spring Data for orders.
 - The user manages the existing AWS infrastructure and tunnel. Do not start local Docker,
   log into AWS, or start a VM. Local embedded databases are part of the applications.
+  Use the existing AWS Kafka and user-managed tunnel for scenarios that need a broker.
 - Keep shared clients and exceptions outside scenario packages and shared agent settings
   in each service's `otel.properties`. Retain the existing production-oriented practices
   for the concept being demonstrated while keeping business code minimal.

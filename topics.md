@@ -6,11 +6,12 @@ Start with **S030 — Observability** using `order-service` and `inventory-servi
 ## Status and conventions
 
 - Every checkbox means implemented, run, reviewed, and explained. S030–S032 have code and Postman demo instructions. Their AWS demos still need your run; all completion boxes remain open.
+- S041 is verified locally, including rollback, successful checkout, and unavailable inventory. S017–S018 have implementation, H2 transaction checks, and HTTP checks; their live Kafka exercises still need your run, so their completion boxes remain open.
 - The previous ecommerce implementation is archived; it does not count as scenario completion.
-- IDs are permanent and local to this project. Next unused ID: `S041`. Never reuse retired IDs.
+- IDs are permanent and local to this project. Next unused ID: `S042`. Never reuse retired IDs.
 - Planned paths are plain text. Turn them into links only after the artifact exists.
 - Java base package: `com.tip.ecommerce`, retained from the original project.
-- Use at most three application projects in this workspace; currently there are exactly two: `order-service` and `inventory-service`. Reuse them for later scenarios.
+- Use at most three application projects in this workspace; the three applications are `order-service`, `inventory-service`, and `payment-service`. Reuse them for later scenarios.
 - All scenario Java types go directly in its one package.
 - Each service is an independent Maven project and process. Shared startup code stays outside scenario packages. Older planned `scenarios/` paths are proposals to revise when that exercise is started, not instructions to create more projects.
 - Default tools: Java 17, Maven, Spring Boot, and WebClient for outgoing HTTP. The first exercise pins Spring Boot 3.5.9 and OpenTelemetry Java agent 2.20.0, matching the original project.
@@ -103,6 +104,15 @@ See [workspace guide](README.md) and [document conventions](docs/README.md).
 
 ## Data ownership and consistency
 
+Start distributed transactions with the [overview](docs/data-consistency/00-distributed-transactions-overview.md).
+Follow S041 → S017 → S018: local boundaries, Kafka choreography, then recovery.
+
+<a id="s041"></a>
+- [x] **S041 — Local transaction boundaries** · Scenario: **Order rolls back after inventory commits**
+  - Try: Fail checkout after a successful reservation and compare both databases.
+  - Implementation: [order package](order-service/src/main/java/com/tip/ecommerce/s041_transaction_boundary/), reusing S030 inventory and the shared client.
+  - Lesson: [S041 — Local transaction boundaries](docs/data-consistency/s041_transaction_boundary.md)
+
 <a id="s014"></a>
 - [ ] **S014 — Database per service** · Scenario: **Order cannot query the stock tables**
   - Try: Exchange contracts instead of joining another service database.
@@ -122,16 +132,16 @@ See [workspace guide](README.md) and [document conventions](docs/README.md).
   - Planned note: `docs/data-consistency/s016_stock_concurrency.md`
 
 <a id="s017"></a>
-- [ ] **S017 — Saga and compensation** · Scenario: **Payment fails after stock reservation**
-  - Try: Model reserve, pay, and release as explicit steps.
-  - Planned implementation: `scenarios/s017_saga_compensation/src/main/java/com/tip/ecommerce/s017_saga_compensation/`
-  - Planned note: `docs/data-consistency/s017_saga_compensation.md`
+- [ ] **S017 — Saga choreography and compensation** · Scenario: **Payment fails after stock reservation**
+  - Try: React to Kafka events, release stock after payment rejection, and confirm cancellation after release.
+  - Implementation: [order](order-service/src/main/java/com/tip/ecommerce/s017_saga_compensation/) · [inventory](inventory-service/src/main/java/com/tip/ecommerce/s017_saga_compensation/) · [payment](payment-service/src/main/java/com/tip/ecommerce/s017_saga_compensation/)
+  - Lesson: [S017 — Saga choreography and compensation](docs/data-consistency/s017_saga_compensation.md)
 
 <a id="s018"></a>
-- [ ] **S018 — Architect Level: recovery** · Scenario: **The coordinator crashes after payment**
-  - Try: Persist progress and reconcile ambiguous outcomes without double charging.
-  - Planned implementation: `scenarios/s018_saga_recovery/src/main/java/com/tip/ecommerce/s018_saga_recovery/`
-  - Planned note: `docs/data-consistency/s018_saga_recovery.md`
+- [ ] **S018 — Recover unfinished choreography** · Scenario: **A service stops or compensation fails**
+  - Try: Resume durable work and handle repeated events safely. Discuss recovery limits for architects.
+  - Implementation: Reuses S017; [order fault controls](order-service/src/main/java/com/tip/ecommerce/s018_saga_recovery/) · [inventory fault control](inventory-service/src/main/java/com/tip/ecommerce/s018_saga_recovery/)
+  - Lesson: [S018 — Recover unfinished choreography](docs/data-consistency/s018_saga_recovery.md)
 
 ## Messaging and events
 

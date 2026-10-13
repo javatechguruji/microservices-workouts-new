@@ -17,9 +17,7 @@ Sometimes that reservation succeeds quickly. Sometimes it is slow or fails.
 | Metrics | Measurements over time | How many reservations arrived, and how long did they take? |
 | Traces | Connected, timed steps of an operation | Was time spent in the inventory call or its database work? |
 
-Logs are individual event records, not a type of metric.
-Logs are the shop's activity notes. Metrics are its running totals and timing summaries.
-A trace is a timing sheet for one operation. Together they explain what happened.
+
 
 ## Follow the order
 
