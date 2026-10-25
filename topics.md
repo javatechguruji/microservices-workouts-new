@@ -8,10 +8,10 @@ Start with **S030 — Observability** using `order-service` and `inventory-servi
 - Every checkbox means implemented, run, reviewed, and explained. S030–S032 have code and Postman demo instructions. Their AWS demos still need your run; all completion boxes remain open.
 - S041 is verified locally, including rollback, successful checkout, and unavailable inventory. S017–S018 have implementation, H2 transaction checks, and HTTP checks; their live Kafka exercises still need your run, so their completion boxes remain open.
 - The previous ecommerce implementation is archived; it does not count as scenario completion.
-- IDs are permanent and local to this project. Next unused ID: `S042`. Never reuse retired IDs.
+- IDs are permanent and local to this project. Next unused ID: `S043`. Never reuse retired IDs.
 - Planned paths are plain text. Turn them into links only after the artifact exists.
 - Java base package: `com.tip.ecommerce`, retained from the original project.
-- Use at most three application projects in this workspace; the three applications are `order-service`, `inventory-service`, and `payment-service`. Reuse them for later scenarios.
+- Reuse `order-service`, `inventory-service`, `payment-service`, and `gateway-service`. Add applications only when a topic needs them; prefer services from the old workspace.
 - All scenario Java types go directly in its one package.
 - Each service is an independent Maven project and process. Shared startup code stays outside scenario packages. Older planned `scenarios/` paths are proposals to revise when that exercise is started, not instructions to create more projects.
 - Default tools: Java 17, Maven, Spring Boot, and WebClient for outgoing HTTP. The first exercise pins Spring Boot 3.5.9 and OpenTelemetry Java agent 2.20.0, matching the original project.
@@ -183,6 +183,11 @@ Follow S041 → S017 → S018: local boundaries, Kafka choreography, then recove
 
 ## Gateway and security
 
+Start request rate limiting with the [overview](docs/gateway-security/00-request-rate-limiting-overview.md).
+S028 uses client IP and Redis at the gateway, without authentication.
+For authentication and authorization, start with the [security overview](docs/authentication-authorization/00-authentication-authorization-overview.md).
+S026, S027 and S029 share one security profile and Postman setup.
+
 <a id="s025"></a>
 - [ ] **S025 — Gateway routing** · Scenario: **One entry point routes to two services**
   - Try: Add a gateway after direct service calls are understood.
@@ -191,27 +196,31 @@ Follow S041 → S017 → S018: local boundaries, Kafka choreography, then recove
 
 <a id="s026"></a>
 - [ ] **S026 — Authentication and authorization** · Scenario: **A token is valid but the action is forbidden**
-  - Try: Distinguish identity checks from action and ownership checks.
-  - Planned implementation: `scenarios/s026_token_validation/src/main/java/com/tip/ecommerce/s026_token_validation/`
-  - Planned note: `docs/gateway-security/s026_token_validation.md`
+  - Try: Validate JWTs, replace identity headers, and enforce roles, permissions, ownership and tenants.
+  - Implementation: [gateway package](gateway-service/src/main/java/com/tip/ecommerce/s026_token_validation/) · [order package](order-service/src/main/java/com/tip/ecommerce/s026_token_validation/)
+  - Lessons: [Authentication at Gateway](docs/gateway-security/01-s026-gateway-authentication.md) · [Gateway interview notes](docs/gateway-security/02-s026-gateway-authentication-interview-notes.md) · [Authentication in order-service](docs/authentication-authorization/02-s026-order-service-authentication.md) · [Roles, permissions, ownership and tenants](docs/authentication-authorization/03-s026-authorization.md) · [Authorization interview notes](docs/authentication-authorization/03-s026-authorization-interview-notes.md)
+  - Verification: Compiled; Keycloak scripts and Postman demonstrations remain instructor-run.
 
 <a id="s027"></a>
 - [ ] **S027 — Service identity** · Scenario: **Orders calls stock as a machine**
-  - Try: Separate user identity from a service credential.
-  - Planned implementation: `scenarios/s027_service_identity/src/main/java/com/tip/ecommerce/s027_service_identity/`
-  - Planned note: `docs/gateway-security/s027_service_identity.md`
+  - Try: Authorize the human first, acquire a machine token, and handle credential/dependency failures.
+  - Implementation: [order package](order-service/src/main/java/com/tip/ecommerce/s027_service_identity/) · [inventory package](inventory-service/src/main/java/com/tip/ecommerce/s027_service_identity/)
+  - Lesson: [Call inventory using a service identity](docs/authentication-authorization/04-s027-service-to-service-authentication.md)
+  - Verification: Compiled; live authorization and recovery demonstrations remain instructor-run.
 
 <a id="s028"></a>
-- [ ] **S028 — Rate limiting** · Scenario: **One caller floods the stock endpoint**
-  - Try: Define a key, request budget, and rejection behavior.
-  - Planned implementation: `scenarios/s028_rate_limiting/src/main/java/com/tip/ecommerce/s028_rate_limiting/`
-  - Planned note: `docs/gateway-security/s028_rate_limiting.md`
+- [ ] **S028 — Request rate limiting** · Scenario: **One caller floods the stock endpoint**
+  - Try: Limit stock reads by IP, observe 429 and refill, share an allowance across gateways, and allow reads during Redis failure.
+  - Implementation: [gateway package](gateway-service/src/main/java/com/tip/ecommerce/s028_rate_limiting/), reusing the existing inventory stock API.
+  - Lesson: [S028 — Limit stock requests by client IP](docs/gateway-security/s028_rate_limiting.md)
+  - Verification: Packaging and local fail-open routing checked; healthy AWS Redis exercises await the user-managed tunnel.
 
 <a id="s029"></a>
 - [ ] **S029 — Architect Level: trust boundaries** · Scenario: **A caller bypasses the gateway**
-  - Try: Design downstream verification, credential rotation, and least privilege.
-  - Planned implementation: `scenarios/s029_trust_boundaries/src/main/java/com/tip/ecommerce/s029_trust_boundaries/`
-  - Planned note: `docs/gateway-security/s029_trust_boundaries.md`
+  - Try: Test direct access, understand header trust, and discuss revocation, key rotation and deployment boundaries.
+  - Implementation: Reuses S026/S027 and [shared order security](order-service/src/main/java/com/tip/ecommerce/security/); no duplicate scenario package.
+  - Lesson: [Trust boundaries and token lifecycle](docs/authentication-authorization/05-s029-trust-boundaries.md)
+  - Verification: Boundary demonstrations remain instructor-run; mTLS/network isolation and revocation alternatives are design discussions.
 
 ## Observability
 
@@ -271,11 +280,23 @@ services’ own in-memory databases and the existing observability tools. Each l
   - Planned implementation: `scenarios/s037_stateless_scaling/src/main/java/com/tip/ecommerce/s037_stateless_scaling/`
   - Planned note: `docs/scaling-performance/s037_stateless_scaling.md`
 
+<a id="s042"></a>
+- [ ] **S042 — Hibernate caching** · Scenario: **Reuse order data and customer order searches**
+  - Try: First-level, second-level and query caching; committed updates and rollback.
+  - Implementation: [Hibernate caching package](order-service/src/main/java/com/tip/ecommerce/s042_hibernate_cache/).
+  - Lesson: [Hibernate first-level, second-level and query caches](docs/scaling-performance/s042_hibernate_cache.md).
+  - Profile and entry: `s042`, `/s042/api/orders`.
+  - Status: compiled and reviewed; instructor-run demonstrations remain pending.
+
 <a id="s038"></a>
-- [ ] **S038 — Caching** · Scenario: **Stock changes while a cached value remains**
-  - Try: Choose TTL, invalidation, and stale-data behavior.
-  - Planned implementation: `scenarios/s038_cache_consistency/src/main/java/com/tip/ecommerce/s038_cache_consistency/`
-  - Planned note: `docs/scaling-performance/s038_cache_consistency.md`
+- [ ] **S038 — Application caching with Caffeine and Redis** · Scenario: **Stock changes while a cached value remains**
+  - Try: Reuse stock displays with local or shared caching; demonstrate expiry, invalidation, failures and recovery.
+  - Start: [Caching overview and learning path](docs/scaling-performance/00-caching-overview.md).
+  - Implementation: [Shared application-caching package](order-service/src/main/java/com/tip/ecommerce/s038_cache_consistency/).
+  - Lessons: [Local Caffeine cache](docs/scaling-performance/s038_cache_consistency.md) · [Shared Redis cache](docs/scaling-performance/s038_redis_cache.md) · [Architect FAQ: Redis load coordination](docs/scaling-performance/s038_redis_cache.md#how-can-we-enable-redis-load-coordination--architect-level).
+  - Design discussions: [Consistency and load](docs/scaling-performance/s038_cache_architecture.md) · [HTTP and platform caches](docs/scaling-performance/s038_http_and_platform_caches.md). These add no separate implementation.
+  - Profiles and entry: `s038-local` or `s038-redis`, `/s038/api/orders`.
+  - Status: compiled and reviewed; instructor-run HTTP and Redis demonstrations remain pending.
 
 <a id="s039"></a>
 - [ ] **S039 — Backpressure** · Scenario: **Events arrive faster than consumers can work**

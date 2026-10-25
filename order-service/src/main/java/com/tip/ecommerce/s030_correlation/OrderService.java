@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-@org.springframework.context.annotation.Profile("!s017 & !s041")
+@org.springframework.context.annotation.Profile("!s017 & !s041 & !s042 & !s026")
 public class OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;

@@ -8,8 +8,9 @@ presentation guidance elsewhere in this workspace.
 
 - Reference `../microservices-workouts` for familiar business names, API behavior, and
   sample data. Inspect it as needed; do not modify that project.
-- Reuse order-service, inventory-service, and payment-service; never exceed three
-  application projects. Prefer services and business examples from the old workspace.
+- Reuse order-service, inventory-service, payment-service, and gateway-service.
+  Add applications only when needed for the topic; prefer applications and business
+  examples from the old workspace.
   Use flat `com.tip.ecommerce.<scenario>` packages.
 - Observability uses synchronous checkout through the shared InventoryServiceClient.
   Preserve that example. Other topics may use Kafka and background delivery when the
@@ -24,6 +25,19 @@ presentation guidance elsewhere in this workspace.
 - The user manages the existing AWS infrastructure and tunnel. Do not start local Docker,
   log into AWS, or start a VM. Local embedded databases are part of the applications.
   Use the existing AWS Kafka and user-managed tunnel for scenarios that need a broker.
+  Rate limiting uses gateway-service, client IP, and the existing AWS Redis through
+  the user-managed tunnel, without authentication. Allow requests if Redis fails.
+- Caching lessons use H2 and existing services; Redis caching uses the existing AWS
+  Redis through the user-managed tunnel. Keep cached displays separate from authoritative
+  reservation checks. Do not run caching applications or live demonstrations unless the
+  user later requests it; compile and clearly label instructor-run results as expected.
+- Authentication and authorization use profile `s026` in Gateway, order and inventory.
+  Gateway validates JWTs and replaces identity headers; services verify JWTs independently
+  and enforce permissions, ownership and tenant rules. Header agreement does not prove a
+  Gateway network hop. Use Postman only, with the existing Keycloak realm and scoped setup
+  scripts. Leave applications, demos and Keycloak script execution to the user; compile
+  and review locally. Include reference POC credentials without claiming live verification.
+  Preserve unrelated lessons' unauthenticated behavior outside the security profile.
 - Keep shared clients and exceptions outside scenario packages and shared agent settings
   in each service's `otel.properties`. Retain the existing production-oriented practices
   for the concept being demonstrated while keeping business code minimal.
@@ -52,6 +66,12 @@ without asking the user to repeat preferences. Ask only when necessary informati
   calls in reusable clients, and shared error handling in a common exception package.
 - Keep scenario-specific code in its scenario package. Keep reusable components and
   configuration outside scenario-specific names so other lessons can reuse them.
+- Use familiar business names such as `Order` and `OrderRepository` within scenario
+  packages. Avoid concept prefixes that imply extra entities or repositories are needed.
+  Isolate Spring beans and JPA scanning by profile when names repeat across scenarios.
+- Use self-descriptive method and response names, such as `findOrderByIdOrThrow`,
+  `toOrderResponse` and `OrderResponse`, instead of vague names such as `required`
+  or `view`. Keep source calls and document excerpts synchronized when renaming.
 - Prefix scenario entry APIs according to workspace conventions; shared downstream APIs
   should remain reusable. Keep implementation, documentation, and API paths synchronized.
 
@@ -67,10 +87,19 @@ without asking the user to repeat preferences. Ask only when necessary informati
   what the example does not do. Describe the actual behavior directly.
 - Use business names in the story. Put hosting, connection, and environment details only
   where needed to configure or demonstrate the example.
+- Keep interview notes specific to the selected layer. Verify role/authority mapping
+  against that layer's configuration before describing it. Rebuilding identity headers
+  is distinct from mapping roles to Spring Security authorities.
 - Teach only the current concept in depth. For related concepts, give the minimum needed
   to understand the example and link to their own lesson. Put architecture depth later.
+- For broad topics, label lessons or scenarios Beginner and Architect Level. Implement
+  the main practical cases and group related variants around shared business code.
+  Put specialized design discussions in linked lessons and clearly distinguish them
+  from runnable implementations. Do not create a new package merely for each test case.
 - Avoid repeating explanations in prose, tables, comments, and screenshots. Each should
   add information the learner needs; do not explain self-evident messages again.
+  Paired teaching images and Markdown deliberately share step numbers and short labels;
+  the document expands the image's concise explanation.
 
 ## Overview and navigation
 
@@ -85,6 +114,117 @@ Do not create another introductory README or README files inside source packages
 Keep lesson titles, filenames, section names, roadmap labels, and links consistent.
 Use descriptive names that match the actual concept. Update diagrams when flows change:
 show current entry points, internal calls, data stores, tools, and response timing.
+
+## Handwritten teaching images and matching Markdown
+
+Apply these defaults whenever the user requests a lesson image and Markdown document,
+including in later sessions. Use these preferences without asking the user to repeat
+them. Create only the requested topics; opening the workspace is not a lesson request.
+
+### Subject folders and reading order
+
+- Organize under `docs/<subject>/` by concept, rather than by one participating service.
+  Gateway authentication and its image belong in `docs/gateway-security/`.
+  The shared security overview, service authentication and authorization lessons stay
+  in `docs/authentication-authorization/`. Link between these folders; keep the shared
+  login setup in the Gateway lesson.
+- Keep one main document per topic. Authentication, authorization and service-to-service
+  authentication are separate lessons. When authentication happens at Gateway and a
+  receiving service, give each layer its own document and handwritten image, with its
+  own Step 1 through the end. Teach Gateway first, then the service. Keep shared login
+  setup in the first relevant lesson and link to it. Briefly explain handoffs without
+  expanding the next layer's internals. If the user requests one layer first, finish
+  that pair and defer the next layer's detailed revision/image until requested.
+- Use two-digit numeric **prefixes** to sort documents in reading order: `00` for the
+  overview, followed by `01`, `02`, etc. Retain scenario IDs and descriptive topic names.
+  Readers must be able to find the next lesson without reopening the overview.
+- Keep only Markdown files at the subject folder's top level; put images in `images/`.
+  Give each paired Markdown and PNG exactly the same filename stem, including the
+  reading-order prefix and scenario ID. Example:
+
+  ```text
+  docs/
+  ├── gateway-security/
+  │   ├── 01-s026-gateway-authentication.md
+  │   └── images/
+  │       └── 01-s026-gateway-authentication.png
+  └── authentication-authorization/
+      ├── 00-authentication-authorization-overview.md
+      ├── 02-s026-order-service-authentication.md
+      ├── 03-s026-authorization.md
+      ├── 04-s027-service-to-service-authentication.md
+      ├── 05-s029-trust-boundaries.md
+      └── images/
+          └── 02-s026-order-service-authentication.png
+  ```
+
+- Display the image inline using a relative Markdown reference, for example
+  `![Authentication flow, Steps 1–9](images/01-s026-gateway-authentication.png)`.
+  An additional full-size link is useful. Retain the PNG: Markdown links to the file
+  and does not store a separate copy of its image data.
+- On moves or renames, update all incoming links, roadmap/overview navigation and any
+  filename printed inside the image. Do not leave duplicate copies at the old paths.
+- Keep generation prompts, obsolete variants, temporary questionnaires and scratch files
+  out of finished lesson folders. Remove task-created temporary artifacts when no longer
+  needed; preserve unrelated files and unique user work. Store enduring preferences here.
+
+### Handwritten image style and explanation
+
+- Use the established handwritten educational style: white background, navy handwritten
+  headings, pale blue/green/yellow/purple boxes, clear arrows and prominent numbered
+  steps. Use readable monospaced code and configuration. The existing
+  `docs/gateway-security/images/01-s026-gateway-authentication.png` is a style reference.
+- Produce a readable, high-resolution image with generous spacing, preferably a clear
+  vertical flow. Do not squeeze code or configuration into tiny cards.
+- Make the image easy to recall in a 30–60 second interview answer. Group framework
+  internals into meaningful actions rather than numbering every internal class call.
+  Put the actual filename and relevant method/configuration section prominently in
+  every step. Use a short memory phrase and matching interview answer in Markdown.
+  Keep image snippets to a few readable lines; expand the annotated code in Markdown.
+  Explicitly say what the framework performs and what our application configures or
+  implements. Keep optional framework internals out of the main visual flow.
+- Show the full flow for the selected topic, beginning at the real user action and entry
+  point. Include relevant internal calls, external tools, settings, success/failure
+  branches, and the response or handoff. Mark service boundaries and identify which steps
+  occur at the selected layer. In a layer-specific lesson, show other services only
+  as external callers or handoff destinations; link to their separate detailed flows.
+- Every numbered implementation step must show the relevant code or configuration,
+  not just name a class or refer to a later step. Put a short revision snippet beside
+  that step in the image and a fuller, focused excerpt under the matching Markdown heading.
+  Add plain-English inline comments explaining what important lines do, why they matter,
+  and what the learner can observe. JSON remains valid; explain it in an adjacent table.
+- Name and link the actual source file and method. If a step says “our bean returns X,”
+  show the bean declaration, relevant inputs, construction and return; explain the
+  interface, implementation and who calls it. Mark omitted setup clearly and retain the
+  real order of operations. Do not present incomplete excerpts as copyable full methods.
+- Distinguish the code we write from library/framework code we configure. For a framework
+  step, show our enabling configuration and, when helpful, a verified short framework
+  excerpt labelled with its source/version. Say that framework excerpts are for explanation,
+  not code to add to the application. Never invent application methods to illustrate it.
+- Explain each step in simple English beside its snippet. A source link or “see Step N”
+  supplements the local explanation; it does not replace the code needed to understand
+  this step. Small snippet repetition across steps is allowed when needed for clarity.
+  Keep the image concise and readable, with fuller comments and detail in Markdown.
+- Distinguish our code from framework components, local calls from HTTP calls, startup
+  wiring from request-time behavior, and authentication from authorization. Keep other
+  topics brief and link to their own lessons.
+- Label abbreviated code as excerpts, resolved configuration as defaults, and illustrative
+  results as expected. A teaching image is not a screenshot or proof of live execution.
+
+### Synchronize and verify the pair
+
+- Use identical step numbers, titles and sequence in the image and Markdown implementation
+  headings, such as `Step 1 — Enable JWT authentication`. The document expands each step
+  with what happens, why, actual code/configuration, and the observable result.
+  Keep testing-scenario numbering distinct from the implementation flow's step numbering.
+- Matching step labels intentionally repeat across the pair; avoid repeating entire
+  explanations. The image provides a concise visual flow and the Markdown provides detail.
+- When the flow, code, settings or numbering changes, update both artifacts together.
+  Verify the real source implementation; do not invent behavior to fit the diagram.
+- Inspect the final image visually for legibility, exact class names, code, property names,
+  URLs, arrows, numbers and outcomes. Audit every step for its matching snippet, clear
+  inline explanations and correct application/framework attribution. Verify image paths, local links and anchors, matching
+  filename stems, reading order, source consistency and valid JSON examples.
 
 ## Scenario structure
 

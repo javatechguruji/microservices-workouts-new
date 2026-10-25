@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/inventory")
-@org.springframework.context.annotation.Profile("!s017")
+@org.springframework.context.annotation.Profile("!s017 & !s026")
 public class InventoryController {
   private static final Logger log = LoggerFactory.getLogger(InventoryController.class);
   private final InventoryService inventoryService;

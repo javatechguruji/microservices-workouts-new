@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 public class PersistenceConfiguration {
   @Configuration
-  @Profile("!s017")
+  @Profile("!s017 & !s042 & !s026")
   @EntityScan("com.tip.ecommerce.s030_correlation")
   @EnableJpaRepositories("com.tip.ecommerce.s030_correlation")
   public static class ObservabilityPersistence {}
